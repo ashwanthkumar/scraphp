@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- *	Spider is a nifty single threaded application that can help you fetch the
+ *	Scraphp is a nifty single threaded application that can help you fetch the
  *	content you want from the web, using simple XPath queries and defining
  *	items that you want to scrape. 
  *
@@ -9,10 +9,10 @@
  */
 
 // Usage
-// $ ./spider --configuration="configuration.php" 
+// $ ./scraphp --configuration="configuration.php" 
 
 // For extracting the content out of flipkart
-// $ ./spider --configuration=config.flipkart.sample.php
+// $ ./scraphp --configuration=config.flipkart.sample.php
 
 $path = __FILE__;
 require_once(dirname($path) . "/lib/log4php/Logger.php");
@@ -69,11 +69,11 @@ if(isset($config['sites'])) {
 		$logger->warn('There are no sites defined for crawling.');
 	} else {
 		while($site = current($config['sites'])) {
-			// Now start the spider which will crawl the websites 
-			$spider = new ScrapperSpider;
-			// Set the general configuration for the spider
-			$spider->configure($config);
-			verbose("Scrapper Spider has been created and configured");
+			// Now start the scraphp which will crawl the websites 
+			$scraphp = new ScrapperScraphp;
+			// Set the general configuration for the scraphp
+			$scraphp->configure($config);
+			verbose("Scrapper Scraphp has been created and configured");
 
 			// Key used for refering to the site
 			$siteKey = strtolower(key($config['sites']));
@@ -97,37 +97,37 @@ if(isset($config['sites'])) {
 			$baseUrl = $site['base_url'];
 			verbose("Added the base URL as $baseUrl");
 			
-			// Setting the default URL to crawl in the spider
-			$spider->setURL($baseUrl);
+			// Setting the default URL to crawl in the scraphp
+			$scraphp->setURL($baseUrl);
 
 			if(isset($site['validMatch'])) {
-				$spider->addFollowMatch(trim($site['validMatch']));
+				$scraphp->addFollowMatch(trim($site['validMatch']));
 				verbose("Added the FollowMatch Pattern as " . $site['validMatch']);
 			} else {
-				verbose("No FollowMatch Pattern were added to the Spider.");
+				verbose("No FollowMatch Pattern were added to the Scraphp.");
 			}
 			
 			if(isset($site['nonValidMatch'])) {
-				$spider->addNonFollowMatch(trim($site['validMatch']));
+				$scraphp->addNonFollowMatch(trim($site['validMatch']));
 				verbose("Added the NonFollowMatch Pattern as " . $site['nonValidMatch']);
 			} else {
-				verbose("No NonFollowMatch Pattern were added to the Spider.");
+				verbose("No NonFollowMatch Pattern were added to the Scraphp.");
 			}
 
 			if(isset($site['pageLimit'])) {
-				$spider->setPageLimit(trim($site['pageLimit']));
+				$scraphp->setPageLimit(trim($site['pageLimit']));
 				verbose("Added the PageLimit value as " . $site['pageLimit']);
 			} else {
-				verbose("No PageLimit value were added to the Spider.");
+				verbose("No PageLimit value were added to the Scraphp.");
 			}
 
-			// Set the siteConfig in the Spider to access the site configuration for processing
-			$spider->siteConfig = $site;
+			// Set the siteConfig in the Scraphp to access the site configuration for processing
+			$scraphp->siteConfig = $site;
 
 			verbose("Starting the crawler now...");
-			// That's it, start the Spider..
+			// That's it, start the Scraphp..
 			// Go.. Go.. Go..
-			$spider->go();
+			$scraphp->go();
 			
 			// Phew! We are done with $site start processing the next site
 			next($config['sites']);
@@ -138,4 +138,3 @@ if(isset($config['sites'])) {
 	verbose("'sites' key is not defined in the configuration. Refer documentation for more details.", "fatal");
 	exit(1);
 }
-
