@@ -1,5 +1,5 @@
 <?php
-if(!defined('SCRAPPER_INCLUDE')) die('I\'m sorry but current you can\'t use this file outside the scrapper application');
+if(!defined('SCRAPPER_INCLUDE')) die('I\'m sorry but current you can\'t use this file outside the Scraph application');
 
 /**
  *	Define the configuration for price scrapper application
@@ -15,7 +15,7 @@ return array(
 	 *				data folder at $SCRAPPER_ROOT path.
 	 */
 	 '_datastore' => array(
-	 	'dsn' => 'mysql:host=localhost;dbname=fohubcom_price',
+	 	'dsn' => 'mysql:host=localhost;dbname=price',
 	 	'user' => 'root',
 	 	'pass' => '',
 	 ),
