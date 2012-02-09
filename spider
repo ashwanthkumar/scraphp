@@ -1,0 +1,141 @@
+#!/usr/bin/env php
+<?php
+/**
+ *	Spider is a nifty single threaded application that can help you fetch the
+ *	content you want from the web, using simple XPath queries and defining
+ *	items that you want to scrape. 
+ *
+ *	@author	Ashwanth Kumar <ashwanth@ashwanthkumar.in>
+ */
+
+// Usage
+// $ ./spider --configuration="configuration.php" 
+
+// For extracting the content out of flipkart
+// $ ./spider --configuration=config.flipkart.sample.php
+
+$path = __FILE__;
+require_once(dirname($path) . "/lib/log4php/Logger.php");
+
+require_once(dirname($path) . "/lib/scrapper.functions.php");
+
+define('SCRAPPER_INCLUDE', true);
+
+Logger::configure('log4php.xml');
+global $logger, $verbose, $debug, $config, $siteKeyId;
+$logger = Logger::getLogger('default');
+$verbose = Logger::getLogger('verbose');
+
+// Special Autoload functions
+spl_autoload_register('load_models');
+spl_autoload_register('load_lib');
+
+// Check if the configuration file was passed as the command line option
+$options = getopt("c::",array("configuration::"));
+
+// Name or path to default configuration file here
+$default_config_file = "configuration.php";
+
+$config_file = (isset($options['configuration']) && !empty($options['configuration'])) ? $options['configuration'] : $default_config_file;
+// Include the configuration
+$config = is_file($config_file);
+
+// Load the configuration file 
+if(!$config) {
+	$logger->error("Configuration File not found in path: " . $config_file);
+	end_scrapper();
+} else {
+	$config = require($config_file);
+	$debug = (isset($config['_verbose'])) ? (bool) $config['_verbose'] : true;
+}
+
+if(!isset($config['_datastore'])) {
+	$logger->fatal('No datastore properties were found in the system.');
+	end_scrapper();
+}
+
+// Connect the RedbeansPHP to Datastore
+R::addDatabase('production', $config['_datastore']['dsn'], $config['_datastore']['user'], $config['_datastore']['pass'], false);	// Make the production frozen, so that RedBean does not change the schema on demand
+// Make sure the configuration actually requested for the default datastore and it contains values in it
+if(isset($config['_default_datastore']) && count($config['_default_datastore']) >=3) {
+	R::addDatabase('default', $config['_default_datastore']['dsn'], $config['_default_datastore']['user'], $config['_default_datastore']['pass'], false);
+}
+R::selectDatabase('production');	// Select the production datastore by default
+
+
+if(isset($config['sites'])) {
+	if(count($config['sites']) < 1) {
+		verbose("There are no sites defined for crawling.");
+		$logger->warn('There are no sites defined for crawling.');
+	} else {
+		while($site = current($config['sites'])) {
+			// Now start the spider which will crawl the websites 
+			$spider = new ScrapperSpider;
+			// Set the general configuration for the spider
+			$spider->configure($config);
+			verbose("Scrapper Spider has been created and configured");
+
+			// Key used for refering to the site
+			$siteKey = strtolower(key($config['sites']));
+			verbose("Starting to process site $siteKey");
+			// Add the key to the pricesource
+			$sourceExist = R::findOne('pricesource', 'name = ?', array($siteKey));
+			if(is_null($sourceExist)) {
+				$priceSource = R::dispense('pricesource');
+				$priceSource->name = $siteKey;
+				$siteKeyId = R::store($priceSource);	// Now that saves it all
+			} else {
+				$logger->trace("Source Key exist, and the key id is " . $sourceExist->id);
+				$siteKeyId = $sourceExist->id;	// Global value used across classes @TODO Can improve this?
+			}
+			
+			if(!isset($site['base_url'])) {
+				verbose("`base_url` is not defined for the site - $siteKey in the configuration", "fatal");
+				$logger->fatal("`base_url` is not defined for the site - $siteKey in the configuration");
+				end_scrapper();
+			}
+			$baseUrl = $site['base_url'];
+			verbose("Added the base URL as $baseUrl");
+			
+			// Setting the default URL to crawl in the spider
+			$spider->setURL($baseUrl);
+
+			if(isset($site['validMatch'])) {
+				$spider->addFollowMatch(trim($site['validMatch']));
+				verbose("Added the FollowMatch Pattern as " . $site['validMatch']);
+			} else {
+				verbose("No FollowMatch Pattern were added to the Spider.");
+			}
+			
+			if(isset($site['nonValidMatch'])) {
+				$spider->addNonFollowMatch(trim($site['validMatch']));
+				verbose("Added the NonFollowMatch Pattern as " . $site['nonValidMatch']);
+			} else {
+				verbose("No NonFollowMatch Pattern were added to the Spider.");
+			}
+
+			if(isset($site['pageLimit'])) {
+				$spider->setPageLimit(trim($site['pageLimit']));
+				verbose("Added the PageLimit value as " . $site['pageLimit']);
+			} else {
+				verbose("No PageLimit value were added to the Spider.");
+			}
+
+			// Set the siteConfig in the Spider to access the site configuration for processing
+			$spider->siteConfig = $site;
+
+			verbose("Starting the crawler now...");
+			// That's it, start the Spider..
+			// Go.. Go.. Go..
+			$spider->go();
+			
+			// Phew! We are done with $site start processing the next site
+			next($config['sites']);
+		}
+	}
+} else {
+	$logger->error("'sites' key is not defined in the configuration. Refer documentation for more details.");
+	verbose("'sites' key is not defined in the configuration. Refer documentation for more details.", "fatal");
+	exit(1);
+}
+

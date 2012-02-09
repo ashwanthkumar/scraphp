@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://logging.apache.org/log4php/">
+	<!-- Logger used for logging in internal datastore using SQLite -->
+	<!--	Uncomment for logging into internal SQLite Datastore
+    <appender name="default" class="LoggerAppenderPDO">
+		<param name="dsn" value="sqlite:./data/log.db" />
+    </appender>
+    -->
+    
+    <!-- Logger used for logging in RDBMS datastore using PDO -->
+    <!-- Enable for logging into the internal database
+    <appender name="default" class="LoggerAppenderPDO">
+        <param name="dsn" value="mysql:host=localhost;dbname=pricedb" />
+        <param name="user" value="root" />
+        <param name="password" value="secret" />
+        <param name="table" value="log_table" />
+    </appender>
+    -->
+    <!-- Default Logger to file on ./logs/scrapper.log -->
+    <appender name="default" class="LoggerAppenderFile">
+        <layout class="LoggerLayoutTTCC" />
+        <param name="file" value="./logs/scrapper.log" />
+        <param name="append" value="true" />
+    </appender>
+
+	<appender name="verboseAppender" class="LoggerAppenderConsole" />
+	
+	<logger name="verbose">
+		<level value="TRACE" />
+		<appender_ref ref="verboseAppender" />
+    </logger>
+
+    <root>
+    	<level value="INFO" />
+    	<!-- By default we use the File based logger -->
+        <appender_ref ref="default" />
+    </root>
+</configuration>
+
