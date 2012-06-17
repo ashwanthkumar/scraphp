@@ -25,11 +25,11 @@ Usage
 
 Default configuration implemenation crawls the AGMarket (initial question) and adds the content to the datastore
 
-`$ ./spider`
+`$ ./scraphp`
 
 I have created a sample config for crawling Flipkart also which can be executed as
 
-`$ ./spider --configuration=config.flipkart.sample.php`
+`$ ./scraphp --configuration=config.flipkart.sample.php`
 
 This crawls all the products with their name, type (major classifications like books, computers, etc.) and price. 
 
