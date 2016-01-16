@@ -1,3 +1,5 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 Introduction
 ------------
 Scraphp (say Scraph, last p is silent) is a web crawling program. It is basically built to be a standalone executable which can crawl websites and store extract useful content out of it. I created this script for a challenge posted by Indix on Jan 2012, where in I was asked to crawl AGMarket (http://agmarknet.nic.in/) to get the prices of all the products, and store their prices. I also had to version the prices such that it should persist across dates. 
