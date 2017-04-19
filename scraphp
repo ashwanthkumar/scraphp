@@ -70,7 +70,7 @@ if(isset($config['sites'])) {
 	} else {
 		while($site = current($config['sites'])) {
 			// Now start the scraphp which will crawl the websites 
-			$scraphp = new ScrapperScraphp;
+			$scraphp = new ScrapperSpider;
 			// Set the general configuration for the scraphp
 			$scraphp->configure($config);
 			verbose("Scrapper Scraphp has been created and configured");
